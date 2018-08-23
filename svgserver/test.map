@@ -1,0 +1,87 @@
+map
+
+imagetype png
+size 400 400
+extent -20000 -20000 200000 200000
+debug 0
+config "MS_ERRORFILE" "stderr"
+
+OUTPUTFORMAT
+  NAME "svg"
+  DRIVER CAIRO/SVG
+  MIMETYPE "image/svg+xml"
+  IMAGEMODE RGB
+  EXTENSION "svg"
+END
+
+WEB
+  METADATA
+    "wms_title"           "WMS Demo Server"
+    "wms_onlineresource"  ""
+    "wms_srs"             "EPSG:3857"
+    "wms_enable_request"  "*"
+  END
+END
+
+PROJECTION
+    "+init=epsg:3857"
+END
+
+layer
+    type line
+    status default
+    name "root_sublayer_a"
+    MINSCALEDENOM 5000
+    class
+        style
+            color 230 230 230
+            width 1
+        end
+    end
+
+    feature
+      points
+        50 -50 150 -50
+      end
+    end
+end
+
+layer
+    type line
+    status default
+    name "root_sublayer_b_a"
+    class
+        style
+            color 230 230 230
+            width 1
+        end
+    end
+
+    feature
+      points
+        50 -200 150 -200
+      end
+    end
+end
+
+layer
+    type line
+    status default
+    name "root_sublayer_b_b"
+    MAXSCALEDENOM 2500
+    class
+        style
+            color 230 230 230
+            width 1
+        end
+    end
+
+    feature
+      points
+        50 -200 150 -200
+      end
+    end
+end
+
+
+end

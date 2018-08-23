@@ -61,13 +61,33 @@ class IOwithHeaders(object):
         return getattr(self.io, name)
 
 
+def find_exec(executable):
+    """
+    Search executable in PATH environment. Return path if found, None if not.
+    """
+    path = os.environ.get("PATH")
+    if not path:
+        return
+    for p in path.split(os.path.pathsep):
+        p = os.path.join(p, executable)
+        if os.path.exists(p):
+            return p
+        p += ".exe"
+        if os.path.exists(p):
+            return p
+
+
 class CGIClient(object):
     def __init__(self, script, no_headers=False, working_directory=None):
         self.script = script
+        if not os.path.exists(script):
+            self.script = find_exec(script)
+        if self.script is None:
+            raise ValueError("script '%s' not found" % script)
         self.working_directory = working_directory
         self.no_headers = no_headers
 
-    def open(self, params):
+    def get(self, params):
         query = urlencode(params)
         environ = os.environ.copy()
         environ.update(
