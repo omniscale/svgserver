@@ -57,7 +57,7 @@ You can run svgserver from command line with:
 Call svgserver with `--help` to see all available command line options.
 
 
-=== WSGI ===
+### WSGI ###
 
 
 You can serve svgserver as a WSGI application. Here is an example WSGI configuration:
