@@ -5,7 +5,7 @@ Renders maps with Mapserver into layered SVG files where each layer is a separat
 
 svgserver makes direct calls to the Mapserver binary. HTTP calls to an an existing Mapserver WMS are not supported.
 
-svgserver accepts WMS requests at the /svg URL. It requires a `map` parameter with the absolute filename of the Mapserver mapfile. 
+svgserver accepts WMS requests at the /svg URL. It requires a `map` parameter with the absolute filename of the Mapserver mapfile.
 It requests all available layer with a GetCapabilities, requests each layer as an SVG and combines each result into a single SVG document.
 svgserver builds a layer tree based on the layer names. Layer names are split at dash and underscore characters.
 Empty layers (with no data in the requested scale or bounding box) are not added to the final SVG.
@@ -25,7 +25,7 @@ For example, the following list of layers ist converted to the following layer t
         - roads
         - places
 
-The WMS `layers` parameter is ignored and all layers that are visible in the requested scale are added (Min/MaxScaleDenominator). 
+The WMS `layers` parameter is ignored and all layers that are visible in the requested scale are added (Min/MaxScaleDenominator).
 The WMS `format` parameter is always set to `image/svg+xml`. Make sure your mapfile support this with an `OUTPUTFORMAT` similar to:
 
     OUTPUTFORMAT
@@ -40,10 +40,10 @@ The WMS `format` parameter is always set to `image/svg+xml`. Make sure your mapf
 Installation
 ------------
 
-svgserver is written in Python and requires Werkzeug. To install both:
+svgserver is written in Python and requires Werkzeug. Download the latest release from https://github.com/omniscale/svgserver/releases and install with pip:
 
-    cd path-to-this-repo
-    pip install ./
+
+    pip install svgserver-0.*.tar.gz
 
 
 Running
