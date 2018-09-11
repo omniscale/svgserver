@@ -14,8 +14,8 @@ class InternalError(Exception):
 
 
 class MapServer(object):
-    def __init__(self, binary="mapserv"):
-        self.client = CGIClient(binary)
+    def __init__(self, binary=None):
+        self.client = CGIClient(binary or "mapserv")
 
     def get(self, params):
         return self.client.get(params)
@@ -35,7 +35,8 @@ class MapServer(object):
         cap = self.client.get(cap_params)
         if not cap.headers["Content-type"].startswith("text/xml"):
             raise InternalError(
-                "invalid response for GetCapabilities:\n%s" % cap.read()
+                "invalid response for GetCapabilities req:\n%s\n\nresponse:\n%s"
+                % (cap_params, cap.read())
             )
 
         scale_denom = mapserver_scaledenom_from_params(params)

@@ -1,5 +1,6 @@
+import codecs
 import tempfile
-from contextlib import contextmanager
+from contextlib import closing
 
 from .cgi import CGIClient
 from .combine import CombineSVG
@@ -8,47 +9,76 @@ from .mapserv import MapServer, InternalError
 from .tree import build_tree
 
 
-class SVGServer(object):
-    def __init__(self, mapserver_binary="mapserv"):
-        self.mapserver = MapServer(binary=mapserver_binary)
+def _recursive_add_layer(nodes, params, svg, mapserver, translations):
+    for node in nodes:
+        group_name = format_group_name(node, translations)
+        svg.push_group(group_name)
+        if node.layer:
+            params["layers"] = node.layer
+            params["format"] = "image/svg+xml"
+            resp = mapserver.get(params)
+            if resp.headers["Content-type"] != "image/svg+xml":
+                raise InternalError(
+                    "received non SVG response for layer %s:\n%s\n%s"
+                    % (node.layer, resp.headers, resp.read())
+                )
+            svg.add(resp)
+        if node.subs:
+            _recursive_add_layer(node.subs, params, svg, mapserver, translations)
+        svg.pop_group()
 
-    def _recursive_add_layer(self, root, params, svg):
-        for (part, subs) in root:
-            svg.push_group(part)
-            for sub in subs:
-                if isinstance(sub, str):
-                    params["layers"] = sub
-                    resp = self.mapserver.get(params)
-                    if resp.headers["Content-type"] != "image/svg+xml":
-                        raise InternalError(
-                            "received non SVG response for layer %s:\n%s\n%s"
-                            % (sub, resp.headers, resp.read())
-                        )
-                    svg.add(resp)
-                else:
-                    self._recursive_add_layer([sub], params, svg)
-            svg.pop_group()
+def format_group_name(node, translations):
+    if isinstance(node.name, tuple):
+        return ', '.join(translations.get(n, n) for n in node.name)
+    return translations.get(node.name, node.name)
 
-    @contextmanager
-    def get(self, params):
-        layers = self.mapserver.layer_names(params)
-        tree = build_tree(layers)
+def layered_svg(params, translations={}, mapserver_binary="mapserv", root_id='map'):
+    mapserver = MapServer(binary=mapserver_binary)
+    layers = mapserver.layer_names(params)
+    nodes = build_tree(layers)
+    root_id = translations.get(root_id, root_id)
 
-        with tempfile.TemporaryFile() as f:
-            with CombineSVG(f) as svg:
-                self._recursive_add_layer(tree, params, svg)
+    f = tempfile.TemporaryFile()
+    try:
+        with CombineSVG(f, root_id=root_id) as svg:
+            _recursive_add_layer(
+                nodes,
+                params=params,
+                svg=svg,
+                mapserver=mapserver,
+                translations=translations,
+            )
 
-            f.seek(0)
-            yield f
+        f.seek(0)
+        return f
+    except:
+        # close to remove temporary file
+        f.close()
+        raise
 
+
+def load_translations(filename):
+    if not filename:
+        return {}
+
+    translations = {}
+    with codecs.open(filename, encoding="utf8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            if '=' not in line:
+                continue
+            key, translation = line.split('=', 1)
+
+            translations[key.strip()] = translation.strip()
+    return translations
 
 if __name__ == "__main__":
     import os
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
-
-    srv = SVGServer()
 
     params = {
         "service": "WMS",
@@ -63,5 +93,5 @@ if __name__ == "__main__":
         "map": os.path.abspath(os.path.dirname(__file__) + "/../tests/ms.map"),
     }
 
-    with srv.request_svg(params) as f:
+    with closing(layered_svg(params)) as f:
         print(f.read())

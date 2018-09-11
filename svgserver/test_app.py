@@ -1,5 +1,6 @@
 import os
-from svgserver.app import SVGServer
+from svgserver.app import layered_svg
+from contextlib import closing
 
 import pytest
 
@@ -21,8 +22,23 @@ def params():
 
 
 def test_svgserver(params):
-    srv = SVGServer()
-    with srv.get(params) as doc:
+    with closing(layered_svg(params)) as doc:
         content = doc.read()
 
-    assert 'id="sublayer"' in content
+    assert 'id="root, sublayer"' in content
+    assert 'id="a"' in content
+    assert 'id="b, a"' in content
+
+def test_svgserver_translations(params):
+    translations = {
+        "sublayer": "Sublayer",
+        "a": "A-Layer",
+        "b": "B-Layer",
+        "root": "Root",
+    }
+    with closing(layered_svg(params, translations=translations)) as doc:
+        content = doc.read()
+
+    assert 'id="Root, Sublayer"' in content
+    assert 'id="A-Layer"' in content
+    assert 'id="B-Layer, A-Layer"' in content

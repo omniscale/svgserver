@@ -113,7 +113,7 @@ class CGIClient(object):
         stdout = p.communicate()[0]
         ret = p.wait()
         if ret != 0:
-            raise HTTPClientError("Error during CGI call (exit code: %d)" % (ret,))
+            raise RuntimeError("Error during CGI call (exit code: %d)" % (ret,))
 
         if self.no_headers:
             content = stdout
