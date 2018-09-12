@@ -51,7 +51,7 @@ Running
 
 You can run svgserver from command line with:
 
-    python -m svgserver.app
+    python -m svgserver.main
 
 
 Call svgserver with `--help` to see all available command line options.
