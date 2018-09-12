@@ -7,7 +7,6 @@ import logging
 log = logging.getLogger(__name__)
 
 def main():
-    logging.basicConfig(level=logging.INFO)
 
     import argparse
 
@@ -23,6 +22,11 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if args.develop:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     from werkzeug.serving import run_simple
 
