@@ -112,8 +112,10 @@ class CGIClient(object):
 
         stdout = p.communicate()[0]
         ret = p.wait()
-        if ret != 0:
-            raise RuntimeError("Error during CGI call (exit code: %d)" % (ret,))
+        if ret != 0 and ret != -6:
+            # XXX: ignore -6 returned on shutdown by cairo bug
+            #      _cairo_ft_unscaled_font_fini: Assertion `unscaled->face == ((void *)0)
+            raise RuntimeError("Error during CGI call to %s for %s (exit code: %d)" % (self.script, params, ret,))
 
         if self.no_headers:
             content = stdout
