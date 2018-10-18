@@ -16,6 +16,11 @@ def main():
     parser.add_argument("--mapserver", help="mapserver binary")
     parser.add_argument("--translations", help="translations")
     parser.add_argument(
+        "--url-prefix",
+        help="prefix to strip from requested URL. E.g when running behind a frontend "
+        "server that uses a different URL. (not available with --develop)",
+    )
+    parser.add_argument(
         "--develop",
         action="store_true",
         help="start in development mode (reload on code changes)",
@@ -47,7 +52,9 @@ def main():
     else:
         import waitress
 
-        waitress.serve(app, host=args.host, port=args.port)
+        waitress.serve(app, host=args.host, port=args.port,
+                       url_prefix=args.url_prefix,
+                       )
 
 
 if __name__ == "__main__":
