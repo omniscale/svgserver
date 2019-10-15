@@ -77,7 +77,7 @@ def mapserver_scaledenom_from_params(params):
         return None
     bbox = map(float, params["BBOX"].split(","))
     size = int(params["WIDTH"]), int(params["HEIGHT"])
-    res = int(params.get("MAP_RESOLUTION", "72"))
+    res = int(params.get("MAP_RESOLUTION", params.get("MAP.RESOLUTION", "72")))
     return mapserver_scaledenom(bbox, size, res)
 
 
